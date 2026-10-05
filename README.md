@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/support-Buy%20Me%20a%20Coffee-ffdd00?logo=buymeacoffee&logoColor=000)](https://buymeacoffee.com/99proteam)
 
-<img src="docs/demo.gif" alt="A scriptreel demo: signing in to a dashboard with a smooth cursor, auto-zoom and captions" width="820">
+<img src="https://raw.githubusercontent.com/99proteam/scriptreel/main/docs/demo.gif" alt="A scriptreel demo: signing in to a dashboard with a smooth cursor, auto-zoom and captions" width="820">
 
 <sub>This GIF was rendered by scriptreel from <a href="examples/login-flow.yml">examples/login-flow.yml</a>; the full-quality MP4 is in <a href="examples/output">examples/output</a>.</sub>
 
