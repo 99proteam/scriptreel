@@ -1,0 +1,7 @@
+1
+00:00:00,700 --> 00:00:04,200
+Here's a quick tour of the Lumen dashboard.
+
+2
+00:00:10,580 --> 00:00:14,080
+Customer emails are blurred automatically in the recording.

@@ -1,0 +1,22 @@
+# Login flow: sign in and land on the dashboard.
+#   npm run site                      # in another terminal
+#   DEMO_PASSWORD=hunter2 npx scriptreel record examples/login-flow.yml -o login-flow.mp4
+
+url: ${SITE_URL:-http://127.0.0.1:4173}/index.html
+viewport: { width: 1440, height: 900 }
+background: aurora
+
+steps:
+  - caption: "Sign in to your dashboard"
+    voiceover: "Signing in to Lumen takes a few seconds."
+  - click: "text=Log in"
+  - wait: { selector: "#email" }
+  - type: { selector: "#email", text: "demo@example.com" }
+  - type: { selector: "#password", text: "${DEMO_PASSWORD:-correct-horse}", hidden: true }
+    voiceover: "Your password never appears in the script, it comes from an environment variable."
+  - click: "button[type=submit]"
+  - wait: { selector: ".dashboard" }
+  - caption: "Your numbers, live"
+    voiceover: "And you're straight into your live dashboard."
+  - zoom: ".revenue-chart"
+  - pause: 800

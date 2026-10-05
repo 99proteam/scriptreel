@@ -1,0 +1,22 @@
+# Form fill: complete the signup form.
+#   npm run site                      # in another terminal
+#   npx scriptreel record examples/form-fill.yml -o form-fill.mp4
+
+url: ${SITE_URL:-http://127.0.0.1:4173}/signup.html
+viewport: { width: 1280, height: 800 }
+background: ocean
+zoom: strong
+
+steps:
+  - caption: "Start a free trial in under a minute"
+  - type: { selector: "#name", text: "Jane Cooper" }
+  - type: { selector: "#work-email", text: "jane@acme.dev" }
+  - type: { selector: "#company", text: "Acme Inc." }
+  - select: { selector: "#team-size", value: "11-50" }
+  - caption: "Pick the plan that fits"
+  - click: "#plan-business"
+  - type: { selector: "#goals", text: "Weekly revenue and churn reports for the leadership team." }
+  - click: "#terms"
+  - click: "button[type=submit]"
+  - caption: "That's it, you're in!"
+  - pause: 1200

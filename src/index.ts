@@ -1,0 +1,17 @@
+export { record, resolveSettings } from './record.js';
+export type { RecordOptions, RecordResult, ResolvedSettings } from './record.js';
+export { loadScript, parseScript, parseScriptSource, defineDemo, ScriptError } from './script/parse.js';
+export { interpolateEnv, redact } from './script/env.js';
+export type * from './script/types.js';
+export { runScript, StepError } from './runner/recorder.js';
+export type { RunOptions } from './runner/recorder.js';
+export { planCursorMove, cursorAt, moveDuration } from './runner/cursor.js';
+export type { CursorMove } from './runner/cursor.js';
+export { typingSchedule } from './runner/typing.js';
+export { buildCameraTrack, cameraAt, fitCamera, ZOOM_LEVELS } from './render/camera.js';
+export type { Camera, Focus, Keyframe } from './render/camera.js';
+export { buildCaptionSegments, captionAt, buildSubtitleCues, toSrt } from './render/captions.js';
+export { Compositor } from './render/compositor.js';
+export { parseSize, parseBackground, computeLayout, SIZE_PRESETS, BACKGROUND_PRESETS } from './render/layout.js';
+export type { Timeline, Shot, PageKey, ClickMark } from './render/timeline.js';
+export { INIT_TEMPLATE } from './template.js';

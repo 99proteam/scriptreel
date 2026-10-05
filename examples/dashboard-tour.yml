@@ -1,0 +1,24 @@
+# Dashboard tour: highlight key areas and blur customer emails.
+#   npm run site                      # in another terminal
+#   npx scriptreel record examples/dashboard-tour.yml -o dashboard-tour.mp4 --theme dark
+
+url: ${SITE_URL:-http://127.0.0.1:4173}/dashboard.html
+viewport: { width: 1440, height: 900 }
+theme: dark
+background: midnight
+blur: [".customer-email"]
+
+steps:
+  - caption: "Everything about your business at a glance"
+    voiceover: "Here's a quick tour of the Lumen dashboard."
+  - zoom: { selector: ".stats", duration: 1800 }
+  - caption: "Revenue trends over the last year"
+  - zoom: ".revenue-chart"
+  - caption: "See who signed up, with private data blurred"
+    voiceover: "Customer emails are blurred automatically in the recording."
+  - scroll: { to: "#customers" }
+  - pause: 1200
+  - scroll: { y: 0 }
+  - caption: "Create a report in one click"
+  - click: "#new-report"
+  - pause: 1500

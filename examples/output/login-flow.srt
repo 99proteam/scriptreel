@@ -1,0 +1,11 @@
+1
+00:00:00,700 --> 00:00:04,200
+Signing in to Lumen takes a few seconds.
+
+2
+00:00:06,319 --> 00:00:09,707
+Your password never appears in the script, it comes from an environment variable.
+
+3
+00:00:09,707 --> 00:00:12,832
+And you're straight into your live dashboard.

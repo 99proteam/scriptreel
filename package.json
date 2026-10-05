@@ -1,0 +1,85 @@
+{
+  "name": "scriptreel",
+  "version": "0.1.0",
+  "description": "Turn a simple script into a polished product demo video of your web app: smooth cursor, auto-zoom, captions, browser frame. Re-run it when your UI changes.",
+  "keywords": [
+    "demo",
+    "video",
+    "screen-recording",
+    "playwright",
+    "product-demo",
+    "screencast",
+    "ffmpeg",
+    "cli",
+    "automation",
+    "marketing"
+  ],
+  "homepage": "https://github.com/99proteam/scriptreel#readme",
+  "bugs": {
+    "url": "https://github.com/99proteam/scriptreel/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/99proteam/scriptreel.git"
+  },
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/99proteam"
+  },
+  "license": "MIT",
+  "author": "99proteam",
+  "type": "module",
+  "bin": {
+    "scriptreel": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18.18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:e2e": "vitest run tests/e2e",
+    "site": "node scripts/serve-site.mjs",
+    "examples": "npm run build && node scripts/record-examples.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.10",
+    "commander": "^14.0.3",
+    "ffmpeg-static": "^5.3.0",
+    "jiti": "^2.7.0",
+    "picocolors": "^1.1.1",
+    "playwright": "^1.63.0",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.4",
+    "eslint": "^10.12.0",
+    "ffprobe-static": "^3.1.0",
+    "globals": "^17.13.0",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^4.1.11"
+  }
+}
