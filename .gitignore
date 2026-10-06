@@ -6,3 +6,4 @@ coverage/
 .scriptreel-tmp/
 *.error.png
 tests/e2e/output/
+_site/

@@ -9,6 +9,12 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/support-Buy%20Me%20a%20Coffee-ffdd00?logo=buymeacoffee&logoColor=000)](https://buymeacoffee.com/99proteam)
 
+<a href="https://99proteam.github.io/scriptreel/"><img src="https://img.shields.io/badge/%E2%96%B6%20Live%20demo-99proteam.github.io%2Fscriptreel-8b5cf6?style=for-the-badge" alt="Live demo website" height="40"></a>
+
+<a href="https://buymeacoffee.com/99proteam"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Sponsor scriptreel on Buy Me a Coffee" height="60"></a>
+
+**☕ scriptreel is free. If it saves you time, please [sponsor it](https://buymeacoffee.com/99proteam).**
+
 <img src="https://raw.githubusercontent.com/99proteam/scriptreel/main/docs/demo.gif" alt="A scriptreel demo: signing in to a dashboard with a smooth cursor, auto-zoom and captions" width="820">
 
 <sub>This GIF was rendered by scriptreel from <a href="examples/login-flow.yml">examples/login-flow.yml</a>; the full-quality MP4 is in <a href="examples/output">examples/output</a>.</sub>
@@ -26,6 +32,44 @@ Chromium browser and renders:
 
 When your UI changes, re-run the script and the video updates itself. It's an open-source alternative to
 recording demos by hand with paid screen recorders. There is no server and no account: it runs on your machine or in CI.
+
+**▶ See it in action:** the [live demo website](https://99proteam.github.io/scriptreel/) shows each example script next to
+the video it produced, and has a script builder that writes a `demo.yml` for you.
+
+## Installation
+
+**Requirements:** [Node.js](https://nodejs.org) 18.18 or newer, on Windows, macOS or Linux. ffmpeg is bundled, so you
+don't need to install it. Chromium is downloaded once through Playwright (see below).
+
+Pick whichever way suits you:
+
+```bash
+# 1. No install: run the latest version with npx
+npx scriptreel record demo.yml
+
+# 2. As a dev dependency of your project (recommended for teams and CI: everyone uses the same version)
+npm install --save-dev scriptreel
+npx scriptreel record demo.yml
+
+# 3. As a global command, available in any folder
+npm install -g scriptreel
+scriptreel record demo.yml
+```
+
+Then install the browser once:
+
+```bash
+npx playwright install chromium               # on Linux CI: npx playwright install --with-deps chromium
+```
+
+Check that everything works:
+
+```bash
+npx scriptreel --version
+npx scriptreel init && npx scriptreel validate demo.yml
+```
+
+pnpm (`pnpm add -D scriptreel`), Yarn (`yarn add -D scriptreel`) and Bun (`bun add -d scriptreel`) work too.
 
 ## Quick start
 
@@ -264,7 +308,7 @@ npm run examples
 scriptreel is free and MIT-licensed. If it saves you hours of re-recording demos, please consider supporting it.
 Sponsorship pays for maintenance, new features and fast responses to issues.
 
-<a href="https://buymeacoffee.com/99proteam"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support%20scriptreel-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=000" alt="Buy Me a Coffee"></a>
+<a href="https://buymeacoffee.com/99proteam"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Sponsor scriptreel on Buy Me a Coffee" height="60"></a>
 
 | Tier | For | You get |
 | --- | --- | --- |

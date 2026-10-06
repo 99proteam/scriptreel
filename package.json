@@ -35,7 +35,7 @@
     "cursor-animation",
     "zoom"
   ],
-  "homepage": "https://github.com/99proteam/scriptreel#readme",
+  "homepage": "https://99proteam.github.io/scriptreel/",
   "bugs": {
     "url": "https://github.com/99proteam/scriptreel/issues"
   },
@@ -81,7 +81,8 @@
     "test:e2e": "vitest run tests/e2e",
     "site": "node scripts/serve-site.mjs",
     "examples": "npm run build && node scripts/record-examples.mjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "website:build": "node scripts/build-website.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.10",

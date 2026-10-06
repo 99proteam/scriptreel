@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>scriptreel · Demo videos from a YAML script</title>
+<meta name="description" content="Turn a simple YAML script into a polished product demo video of your web app: smooth cursor, auto-zoom, captions and a browser frame. Free, open source, runs in CI.">
+<meta property="og:title" content="scriptreel: demo videos from a YAML script">
+<meta property="og:description" content="Write your product demo once. Get a polished video every time your UI changes.">
+<meta property="og:image" content="https://99proteam.github.io/scriptreel/social-preview.png">
+<meta property="og:url" content="https://99proteam.github.io/scriptreel/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0b14;
+    --bg-2: #12121f;
+    --card: #171728;
+    --line: #2a2a42;
+    --text: #ecebf5;
+    --muted: #a3a1bd;
+    --accent: #8b5cf6;
+    --accent-2: #ec4899;
+    --coffee: #ffdd00;
+    --coffee-ink: #1a1400;
+    --code-bg: #0f0f1c;
+    --radius: 16px;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  img, video { max-width: 100%; display: block; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 16px; }
+  code, pre { font-family: var(--mono); }
+
+  /* Nav */
+  nav {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(11, 11, 20, .78);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .wrap { display: flex; align-items: center; gap: 24px; height: 64px; }
+  .logo { font-weight: 800; font-size: 19px; text-decoration: none; letter-spacing: -.02em; }
+  .nav-links { display: flex; gap: 22px; margin-left: auto; align-items: center; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 15px; font-weight: 500; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-links a.btn-coffee, .nav-links a.btn-coffee:hover { color: var(--coffee-ink); }
+  @media (max-width: 760px) { .nav-links .hide-sm { display: none; } }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+    padding: 12px 20px; border-radius: 12px; font-weight: 600; text-decoration: none;
+    border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer;
+    font-size: 15px; transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    font-family: inherit;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: linear-gradient(135deg, #6366f1, var(--accent), var(--accent-2)); border: 0; color: #fff; }
+  .btn-coffee { background: var(--coffee); color: var(--coffee-ink); border: 0; box-shadow: 0 6px 24px rgba(255, 221, 0, .25); }
+  .btn-coffee:hover { box-shadow: 0 10px 32px rgba(255, 221, 0, .4); }
+  .btn-sm { padding: 8px 14px; font-size: 14px; border-radius: 10px; }
+  .btn-xl { padding: 18px 30px; font-size: 19px; border-radius: 14px; }
+
+  /* Hero */
+  .hero { position: relative; padding: 72px 0 40px; text-align: center; }
+  .hero::before {
+    content: ""; position: absolute; inset: -200px 0 auto; height: 720px; z-index: -1;
+    background:
+      radial-gradient(600px 300px at 30% 30%, rgba(99, 102, 241, .35), transparent 70%),
+      radial-gradient(500px 280px at 70% 25%, rgba(236, 72, 153, .28), transparent 70%);
+  }
+  .pill {
+    display: inline-flex; gap: 8px; align-items: center; padding: 6px 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: rgba(23, 23, 40, .7); color: var(--muted); font-size: 14px;
+  }
+  h1 {
+    font-size: clamp(36px, 6vw, 64px); line-height: 1.05; letter-spacing: -.035em; margin: 20px auto 18px;
+    max-width: 900px; font-weight: 800;
+  }
+  .grad { background: linear-gradient(135deg, #a5b4fc, #c084fc, #f472b6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { color: var(--muted); font-size: clamp(17px, 2vw, 20px); max-width: 680px; margin: 0 auto 28px; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .install {
+    display: inline-flex; align-items: center; gap: 12px; margin: 26px auto 0; padding: 10px 10px 10px 18px;
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px; font-family: var(--mono); font-size: 15px;
+    max-width: 100%;
+  }
+  .install span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .install .dollar { color: var(--accent); }
+  .copy { font-family: inherit; }
+  .hero-video {
+    margin: 48px auto 0; max-width: 1040px; border-radius: 18px; overflow: hidden;
+    border: 1px solid var(--line); box-shadow: 0 40px 120px -30px rgba(139, 92, 246, .55);
+    background: #000; aspect-ratio: 16 / 9;
+  }
+  .hero-video video { width: 100%; height: 100%; object-fit: cover; }
+  .caption-note { color: var(--muted); font-size: 14px; margin-top: 14px; }
+
+  /* Sections */
+  section { padding: 80px 0; }
+  .eyebrow { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+  h2 { font-size: clamp(28px, 4vw, 42px); letter-spacing: -.03em; line-height: 1.1; margin: 10px 0 14px; }
+  .sub { color: var(--muted); max-width: 680px; margin: 0 0 36px; font-size: 18px; }
+  .center { text-align: center; }
+  .center .sub { margin-left: auto; margin-right: auto; }
+
+  /* Example demo: script → video */
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tab {
+    padding: 9px 16px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--muted);
+    font: 600 14px Inter, sans-serif; cursor: pointer;
+  }
+  .tab[aria-selected="true"] { background: var(--card); color: var(--text); border-color: var(--accent); }
+  .demo { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .demo { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px;
+    border-bottom: 1px solid var(--line); color: var(--muted); font-size: 13px; font-family: var(--mono);
+  }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a55; display: block; }
+  pre.code {
+    margin: 0; padding: 16px; background: var(--code-bg); font-size: 13px; line-height: 1.65; overflow: auto;
+    max-height: 460px; color: #d6d3f0;
+  }
+  .y-key { color: #93c5fd; }
+  .y-str { color: #fca5a5; }
+  .y-com { color: #6b6a88; font-style: italic; }
+  .y-num { color: #fcd34d; }
+  .panel video { width: 100%; aspect-ratio: 16 / 9; background: #000; }
+  .arrow-note { color: var(--muted); font-size: 14px; padding: 12px 14px; border-top: 1px solid var(--line); }
+
+  /* Features */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .feature { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+  .feature .ico { font-size: 26px; }
+  .feature h3 { margin: 10px 0 6px; font-size: 18px; }
+  .feature p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  /* Builder */
+  .builder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+  @media (max-width: 900px) { .builder { grid-template-columns: 1fr; } }
+  .form { padding: 18px; display: grid; gap: 14px; }
+  .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+  label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 500; }
+  input, select {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--code-bg);
+    color: var(--text); font: 14px Inter, sans-serif;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatch {
+    width: 34px; height: 34px; border-radius: 9px; border: 2px solid transparent; cursor: pointer; padding: 0;
+  }
+  .swatch[aria-pressed="true"] { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .steps li {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--code-bg);
+    border: 1px solid var(--line); font: 13px var(--mono); min-width: 0;
+  }
+  .steps li .t { color: #93c5fd; flex: none; }
+  .steps li .v { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+  .steps li button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; }
+  .steps li button:hover { color: var(--accent-2); }
+  .add-step { display: grid; grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; }
+  @media (max-width: 600px) { .add-step { grid-template-columns: 1fr 1fr; } }
+  .cmd { margin: 0; padding: 14px 16px; background: var(--code-bg); font-size: 13px; overflow-x: auto; white-space: pre; border-top: 1px solid var(--line); }
+
+  /* Install */
+  .steps-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; counter-reset: s; }
+  .step3 { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; position: relative; }
+  .step3::before {
+    counter-increment: s; content: counter(s); position: absolute; top: -14px; left: 22px; width: 28px; height: 28px;
+    border-radius: 50%; background: linear-gradient(135deg, #6366f1, var(--accent-2)); display: grid; place-items: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .step3 h3 { margin: 6px 0 10px; font-size: 17px; }
+  .step3 pre { margin: 0; padding: 12px 14px; background: var(--code-bg); border-radius: 10px; font-size: 13px; overflow-x: auto; border: 1px solid var(--line); }
+  .step3 p { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
+  .table-wrap { overflow-x: auto; margin-top: 28px; border: 1px solid var(--line); border-radius: var(--radius); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: var(--bg-2); }
+  tr:last-child td { border-bottom: 0; }
+  td code { background: var(--code-bg); padding: 2px 6px; border-radius: 6px; font-size: 13px; white-space: nowrap; }
+
+  /* Sponsor */
+  .sponsor {
+    position: relative; border-radius: 28px; padding: 56px 32px; text-align: center; overflow: hidden;
+    background: linear-gradient(135deg, #2a1f00, #3b2a00 40%, #1f1630);
+    border: 1px solid rgba(255, 221, 0, .35);
+  }
+  .sponsor::before {
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(500px 240px at 50% 0%, rgba(255, 221, 0, .25), transparent 70%);
+  }
+  .sponsor > * { position: relative; }
+  .sponsor h2 { font-size: clamp(30px, 4.5vw, 48px); }
+  .sponsor .sub { color: #e8dfb8; }
+  .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 36px 0 32px; text-align: left; }
+  .tier { background: rgba(0, 0, 0, .35); border: 1px solid rgba(255, 221, 0, .2); border-radius: 16px; padding: 20px; }
+  .tier .price { font-size: 26px; font-weight: 800; color: var(--coffee); }
+  .tier .price small { font-size: 14px; color: #e8dfb8; font-weight: 500; }
+  .tier h3 { margin: 4px 0 6px; font-size: 17px; }
+  .tier p { margin: 0; color: #d9d0aa; font-size: 14px; }
+  .sponsor-url { margin-top: 16px; color: #e8dfb8; font-size: 15px; }
+
+  .why { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+
+  footer { border-top: 1px solid var(--line); padding: 36px 0; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+  footer a { color: var(--muted); }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0;
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 14px;
+    transition: all .2s ease; pointer-events: none; z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#">🎬 scriptreel</a>
+    <div class="nav-links">
+      <a class="hide-sm" href="#demo">Live demo</a>
+      <a class="hide-sm" href="#builder">Script builder</a>
+      <a class="hide-sm" href="#install">Install</a>
+      <a class="hide-sm" href="https://github.com/99proteam/scriptreel#readme">Docs</a>
+      <a class="hide-sm" href="https://github.com/99proteam/scriptreel">GitHub</a>
+      <a class="btn btn-coffee btn-sm" href="https://buymeacoffee.com/99proteam" target="_blank" rel="noopener">☕ Sponsor</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="pill">Free &amp; open source · MIT · <img src="https://img.shields.io/npm/v/scriptreel?label=npm&color=8b5cf6&style=flat-square" alt="npm version" height="18"></span>
+    <h1>Write your product demo once.<br><span class="grad">Get a polished video every time your UI changes.</span></h1>
+    <p class="lead">scriptreel turns a short YAML script into a professional demo video of your web app, with a smooth cursor, auto-zoom, captions and a browser frame. It runs on your machine or in CI. No account needed.</p>
+    <div class="cta">
+      <a class="btn btn-primary btn-xl" href="#install">Get started</a>
+      <a class="btn btn-coffee btn-xl" href="https://buymeacoffee.com/99proteam" target="_blank" rel="noopener">☕ Sponsor this project</a>
+    </div>
+    <div class="install">
+      <span><span class="dollar">$</span> npx scriptreel record demo.yml -o demo.mp4</span>
+      <button class="btn btn-sm copy" data-copy="npx scriptreel record demo.yml -o demo.mp4">Copy</button>
+    </div>
+    <div class="hero-video">
+      <video src="videos/login-flow.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Demo video rendered by scriptreel: signing in to a dashboard"></video>
+    </div>
+    <p class="caption-note">↑ Nobody recorded this video by hand. scriptreel rendered it from a 20-line YAML file.</p>
+  </div>
+</header>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="eyebrow">Live demo</div>
+    <h2>This script → this video</h2>
+    <p class="sub">Pick an example. On the left is the exact script in the repository. On the right is the MP4 scriptreel rendered from it, with no editing afterwards.</p>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-example="login-flow">🔐 Login flow</button>
+      <button class="tab" role="tab" aria-selected="false" data-example="form-fill">📝 Signup form</button>
+      <button class="tab" role="tab" aria-selected="false" data-example="dashboard-tour">📊 Dashboard tour (dark)</button>
+    </div>
+    <div class="demo">
+      <div class="panel">
+        <div class="panel-head"><div class="dots"><i></i><i></i><i></i></div><span id="demo-file">examples/login-flow.yml</span><button class="btn btn-sm copy" id="copy-yaml">Copy</button></div>
+        <pre class="code" id="demo-yaml">Loading…</pre>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>Output · 1920×1080 MP4</span><a id="demo-dl" href="videos/login-flow.mp4" download>Download</a></div>
+        <video id="demo-video" src="videos/login-flow.mp4" controls muted autoplay loop playsinline preload="metadata"></video>
+        <div class="arrow-note" id="demo-note">Typing, a password hidden with an environment variable, waiting for navigation, and zoom.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" style="background: var(--bg-2);">
+  <div class="wrap">
+    <div class="eyebrow">Features</div>
+    <h2>Everything a screen recorder does, minus the re-takes</h2>
+    <p class="sub">scriptreel drives a real Chromium browser with Playwright and composites every frame itself, so the result looks the same on any machine.</p>
+    <div class="grid">
+      <div class="feature"><div class="ico">🖱️</div><h3>Smooth cursor</h3><p>Glides along natural eased curves, with click ripples. No jittery mouse.</p></div>
+      <div class="feature"><div class="ico">🔍</div><h3>Auto-zoom</h3><p>The camera zooms into whatever is being clicked or typed into, then eases back out.</p></div>
+      <div class="feature"><div class="ico">💬</div><h3>Captions &amp; subtitles</h3><p>On-screen captions, plus an <code>.srt</code> file from per-step voice-over lines.</p></div>
+      <div class="feature"><div class="ico">🪟</div><h3>Browser frame</h3><p>Light or dark window chrome, rounded corners, shadow and gradient backgrounds.</p></div>
+      <div class="feature"><div class="ico">🙈</div><h3>Privacy built in</h3><p>Blur emails and API keys in every frame. Secrets come from env vars and never show in logs.</p></div>
+      <div class="feature"><div class="ico">📐</div><h3>Any format</h3><p>MP4, WebM or GIF at YouTube, vertical reel, square, 720p or 4K sizes.</p></div>
+      <div class="feature"><div class="ico">🎯</div><h3>Deterministic</h3><p>A virtual clock means the same script gives the same video on a laptop or a slow CI runner.</p></div>
+      <div class="feature"><div class="ico">🤖</div><h3>Runs in CI</h3><p>Re-record every demo on each release with GitHub Actions. Your docs never go stale.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="builder">
+  <div class="wrap">
+    <div class="eyebrow">Try it</div>
+    <h2>Script builder</h2>
+    <p class="sub">Build a <code>demo.yml</code> in your browser: set the options, add steps, then copy the file and the command.</p>
+    <div class="builder">
+      <div class="panel">
+        <div class="form">
+          <label>Start URL <input id="b-url" value="https://app.example.com"></label>
+          <div class="row">
+            <label>Size
+              <select id="b-size">
+                <option value="youtube">YouTube · 1920×1080</option>
+                <option value="reel">Reel · 1080×1920</option>
+                <option value="square">Square · 1080×1080</option>
+                <option value="720p">720p</option>
+                <option value="4k">4K</option>
+              </select>
+            </label>
+            <label>Output
+              <select id="b-out">
+                <option value="mp4">MP4</option>
+                <option value="webm">WebM</option>
+                <option value="gif">GIF</option>
+              </select>
+            </label>
+          </div>
+          <div class="row">
+            <label>Zoom
+              <select id="b-zoom">
+                <option value="subtle">Subtle (1.4×)</option>
+                <option value="strong">Strong (2×)</option>
+                <option value="off">Off</option>
+              </select>
+            </label>
+            <label>Window theme
+              <select id="b-theme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+          </div>
+          <label>Background <div class="swatches" id="b-bg"></div></label>
+          <label>Steps</label>
+          <ul class="steps" id="b-steps"></ul>
+          <div class="add-step">
+            <select id="s-type" aria-label="Step type">
+              <option>caption</option><option>click</option><option>type</option><option>hover</option>
+              <option>press</option><option>wait</option><option>zoom</option><option>scroll</option>
+              <option>pause</option><option>goto</option>
+            </select>
+            <input id="s-a" aria-label="Step value" placeholder="Text shown on screen">
+            <input id="s-b" aria-label="Second value" placeholder="" hidden>
+            <button class="btn btn-sm" id="s-add">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="dots"><i></i><i></i><i></i></div><span>demo.yml</span><button class="btn btn-sm copy" id="copy-built">Copy</button></div>
+        <pre class="code" id="b-yaml"></pre>
+        <pre class="cmd" id="b-cmd"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install" style="background: var(--bg-2);">
+  <div class="wrap">
+    <div class="eyebrow">Install</div>
+    <h2>Up and running in three commands</h2>
+    <p class="sub">You need Node.js 18.18 or newer. ffmpeg is bundled with the package. Chromium is installed once through Playwright.</p>
+    <div class="steps-3">
+      <div class="step3"><h3>Create a script</h3><pre>npx scriptreel init</pre><p>Writes an example <code>demo.yml</code> that you edit to match your app.</p></div>
+      <div class="step3"><h3>Install Chromium (once)</h3><pre>npx playwright install chromium</pre><p>On Linux CI, add <code>--with-deps</code>.</p></div>
+      <div class="step3"><h3>Record</h3><pre>npx scriptreel record demo.yml -o demo.mp4</pre><p>Add <code>--format gif,webm</code> for extra formats.</p></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Install it as…</th><th>Command</th><th>Best for</th></tr></thead>
+        <tbody>
+          <tr><td>Nothing (run with npx)</td><td><code>npx scriptreel record demo.yml</code></td><td>Trying it out and one-off videos</td></tr>
+          <tr><td>A project dev dependency</td><td><code>npm install --save-dev scriptreel</code></td><td>Teams: everyone and CI use the same pinned version</td></tr>
+          <tr><td>A global command</td><td><code>npm install -g scriptreel</code></td><td>Using <code>scriptreel</code> from any folder</td></tr>
+          <tr><td>A library</td><td><code>import { record } from 'scriptreel'</code></td><td>Building videos from your own Node.js code</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top: 22px;"><a class="btn" href="https://github.com/99proteam/scriptreel#script-format">Read the full documentation →</a></p>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <div class="eyebrow">Why scriptreel</div>
+    <h2>Demo videos that never go out of date</h2>
+    <div class="why">
+      <div class="feature"><div class="ico">⏱️</div><h3>Stop re-recording</h3><p>When a button moves, change one line and re-run instead of re-shooting the whole video.</p></div>
+      <div class="feature"><div class="ico">🔁</div><h3>Reviewable like code</h3><p>Demos live in git, so changes go through pull requests like any other change.</p></div>
+      <div class="feature"><div class="ico">💸</div><h3>Free alternative</h3><p>Covers what you'd otherwise pay a screen-recording app for, and it's automated.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="sponsor" style="padding-top: 20px;">
+  <div class="wrap">
+    <div class="sponsor">
+      <div style="font-size: 56px;">☕</div>
+      <h2>Keep scriptreel free. Sponsor it.</h2>
+      <p class="sub" style="margin-left:auto;margin-right:auto;">scriptreel is free and MIT-licensed. If it saves you hours of re-recording demos, a sponsorship pays for maintenance, new features and fast answers to issues.</p>
+      <a class="btn btn-coffee btn-xl" href="https://buymeacoffee.com/99proteam" target="_blank" rel="noopener" style="font-size: 22px; padding: 20px 40px;">☕ Become a sponsor</a>
+      <div class="tiers">
+        <div class="tier"><div class="price">$5 <small>/ month</small></div><h3>☕ Individual</h3><p>For developers and indie hackers. Our thanks, and your name in the supporters list.</p></div>
+        <div class="tier"><div class="price">$50 <small>/ month</small></div><h3>🚀 Startup</h3><p>For small teams shipping demos in CI. Your name and link in the README, plus priority on issues.</p></div>
+        <div class="tier"><div class="price">$250 <small>/ month</small></div><h3>🏢 Company logo</h3><p>Your logo at the top of the README and on this site, plus a direct line for feature requests.</p></div>
+      </div>
+      <a class="btn btn-coffee" href="https://buymeacoffee.com/99proteam" target="_blank" rel="noopener">Sponsor on Buy Me a Coffee →</a>
+      <p class="sponsor-url">One-off coffees are welcome too · <strong>buymeacoffee.com/99proteam</strong></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>🎬 scriptreel · MIT License</span>
+    <span>
+      <a href="https://www.npmjs.com/package/scriptreel">npm</a> ·
+      <a href="https://github.com/99proteam/scriptreel">GitHub</a> ·
+      <a href="https://github.com/99proteam/scriptreel/issues">Issues</a> ·
+      <a href="https://buymeacoffee.com/99proteam">Sponsor</a>
+    </span>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+  const toast = document.getElementById('toast');
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); } catch {
+      const t = document.createElement('textarea'); t.value = text; document.body.append(t); t.select();
+      document.execCommand('copy'); t.remove();
+    }
+    toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 1400);
+  }
+  document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', () => copy(b.dataset.copy)));
+
+  function escapeHtml(s) { return s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]); }
+  function highlight(yaml) {
+    return yaml.split('\n').map((line) => {
+      const e = escapeHtml(line);
+      if (/^\s*#/.test(line)) return `<span class="y-com">${e}</span>`;
+      return e
+        .replace(/("[^"]*")/g, '<span class="y-str">$1</span>')
+        .replace(/^(\s*-?\s*)([\w-]+)(:)/, '$1<span class="y-key">$2</span>$3')
+        .replace(/([{,]\s*)([\w-]+)(:)/g, '$1<span class="y-key">$2</span>$3')
+        .replace(/(:\s)(\d+)(\s*[,}]|$)/g, '$1<span class="y-num">$2</span>$3');
+    }).join('\n');
+  }
+
+  // Live demo tabs: script on the left, the video it produced on the right.
+  const notes = {
+    'login-flow': 'Typing, a password hidden with an environment variable, waiting for navigation, and zoom.',
+    'form-fill': 'A full signup form: text inputs, a <select>, radio cards, a checkbox and strong zoom.',
+    'dashboard-tour': 'Dark theme, zoom steps, scrolling, and customer emails blurred in every frame.',
+  };
+  const yamlCache = {};
+  let currentYaml = '';
+  async function showExample(name) {
+    document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.example === name)));
+    document.getElementById('demo-file').textContent = `examples/${name}.yml`;
+    const video = document.getElementById('demo-video');
+    video.src = `videos/${name}.mp4`;
+    video.play().catch(() => {});
+    document.getElementById('demo-dl').href = `videos/${name}.mp4`;
+    document.getElementById('demo-note').textContent = notes[name];
+    const pre = document.getElementById('demo-yaml');
+    try {
+      yamlCache[name] ??= await fetch(`examples/${name}.yml`).then((r) => { if (!r.ok) throw r; return r.text(); });
+      currentYaml = yamlCache[name];
+      pre.innerHTML = highlight(currentYaml);
+    } catch {
+      pre.textContent = `See examples/${name}.yml on GitHub.`;
+    }
+  }
+  document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => showExample(t.dataset.example)));
+  document.getElementById('copy-yaml').addEventListener('click', () => copy(currentYaml));
+  showExample('login-flow');
+
+  // Script builder
+  const backgrounds = {
+    aurora: 'linear-gradient(135deg,#6366f1,#a855f7,#ec4899)',
+    ocean: 'linear-gradient(135deg,#0ea5e9,#2563eb,#4f46e5)',
+    sunset: 'linear-gradient(135deg,#f97316,#ec4899,#8b5cf6)',
+    mint: 'linear-gradient(135deg,#34d399,#06b6d4,#3b82f6)',
+    midnight: 'linear-gradient(160deg,#0f172a,#1e293b,#312e81)',
+    slate: '#e2e8f0', charcoal: '#18181b', white: '#ffffff',
+  };
+  let bg = 'aurora';
+  const bgBox = document.getElementById('b-bg');
+  for (const [name, css] of Object.entries(backgrounds)) {
+    const b = document.createElement('button');
+    b.className = 'swatch'; b.style.background = css; b.title = name; b.type = 'button';
+    b.setAttribute('aria-label', name); b.setAttribute('aria-pressed', String(name === bg));
+    b.addEventListener('click', () => {
+      bg = name; bgBox.querySelectorAll('.swatch').forEach((s) => s.setAttribute('aria-pressed', String(s.title === bg))); render();
+    });
+    bgBox.append(b);
+  }
+
+  const stepSpec = {
+    caption: { a: 'Text shown on screen', def: 'Welcome to the app' },
+    click: { a: 'Selector, e.g. text=Log in', def: 'text=Get started' },
+    type: { a: 'Selector, e.g. #email', b: 'Text to type', def: '#email', defB: 'demo@example.com' },
+    hover: { a: 'Selector', def: '.menu' },
+    press: { a: 'Key, e.g. Enter', def: 'Enter' },
+    wait: { a: 'Selector to wait for', def: '.dashboard' },
+    zoom: { a: 'Selector to zoom into', def: '.revenue-chart' },
+    scroll: { a: 'Selector to scroll to', def: '#pricing' },
+    pause: { a: 'Milliseconds', def: '1500' },
+    goto: { a: 'URL or path', def: '/settings' },
+  };
+  let steps = [
+    { type: 'caption', a: 'Sign in to your dashboard' },
+    { type: 'click', a: 'text=Log in' },
+    { type: 'type', a: '#email', b: 'demo@example.com' },
+    { type: 'click', a: 'button[type=submit]' },
+    { type: 'wait', a: '.dashboard' },
+    { type: 'zoom', a: '.revenue-chart' },
+    { type: 'pause', a: '1500' },
+  ];
+  const q = (s) => JSON.stringify(s);
+  function stepYaml(s) {
+    switch (s.type) {
+      case 'type': return `type: { selector: ${q(s.a)}, text: ${q(s.b ?? '')} }`;
+      case 'scroll': return `scroll: { to: ${q(s.a)} }`;
+      case 'wait': return /^\d+$/.test(s.a) ? `wait: ${s.a}` : `wait: { selector: ${q(s.a)} }`;
+      case 'pause': return `pause: ${parseInt(s.a, 10) || 1000}`;
+      default: return `${s.type}: ${q(s.a)}`;
+    }
+  }
+  const sizes = { youtube: [1440, 900], reel: [430, 860], square: [900, 900], '720p': [1280, 720], '4k': [1440, 900] };
+  let builtYaml = '';
+  function render() {
+    const val = (id) => document.getElementById(id).value;
+    const size = val('b-size'), zoom = val('b-zoom'), theme = val('b-theme'), out = val('b-out');
+    const [w, h] = sizes[size];
+    const lines = [
+      `url: ${q(val('b-url') || 'https://app.example.com')}`,
+      `viewport: { width: ${w}, height: ${h} }`,
+      `size: ${size}`,
+      `background: ${bg}`,
+    ];
+    if (zoom !== 'subtle') lines.push(`zoom: ${zoom}`);
+    if (theme !== 'light') lines.push(`theme: ${theme}`);
+    lines.push('', 'steps:', ...steps.map((s) => `  - ${stepYaml(s)}`));
+    builtYaml = lines.join('\n') + '\n';
+    document.getElementById('b-yaml').innerHTML = highlight(builtYaml);
+    document.getElementById('b-cmd').textContent = `npx scriptreel record demo.yml -o demo.${out}`;
+
+    const list = document.getElementById('b-steps');
+    list.innerHTML = '';
+    steps.forEach((s, i) => {
+      const li = document.createElement('li');
+      const t = document.createElement('span'); t.className = 't'; t.textContent = s.type;
+      const v = document.createElement('span'); v.className = 'v'; v.textContent = s.b ? `${s.a} → ${s.b}` : s.a;
+      const up = document.createElement('button'); up.textContent = '↑'; up.title = 'Move up'; up.disabled = i === 0;
+      up.onclick = () => { [steps[i - 1], steps[i]] = [steps[i], steps[i - 1]]; render(); };
+      const del = document.createElement('button'); del.textContent = '✕'; del.title = 'Remove step';
+      del.onclick = () => { steps.splice(i, 1); render(); };
+      li.append(t, v, up, del); list.append(li);
+    });
+  }
+  const sType = document.getElementById('s-type'), sA = document.getElementById('s-a'), sB = document.getElementById('s-b');
+  function syncInputs() {
+    const spec = stepSpec[sType.value];
+    sA.placeholder = spec.a; sA.value = '';
+    sB.hidden = !spec.b; sB.placeholder = spec.b ?? ''; sB.value = '';
+  }
+  sType.addEventListener('change', syncInputs);
+  document.getElementById('s-add').addEventListener('click', () => {
+    const spec = stepSpec[sType.value];
+    steps.push({ type: sType.value, a: sA.value.trim() || spec.def, b: spec.b ? (sB.value || spec.defB) : undefined });
+    syncInputs(); render();
+  });
+  [sA, sB].forEach((el) => el.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('s-add').click(); }));
+  ['b-url', 'b-size', 'b-zoom', 'b-theme', 'b-out'].forEach((id) => document.getElementById(id).addEventListener('input', render));
+  document.getElementById('copy-built').addEventListener('click', () => copy(builtYaml));
+  syncInputs(); render();
+</script>
+</body>
+</html>
