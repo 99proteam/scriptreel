@@ -85,6 +85,13 @@ program
   .option('--scale <n>', 'screenshot device scale factor (default: auto)', toNumber('scale'))
   .option('--timeout <ms>', 'timeout for finding elements and loading pages', toNumber('timeout'))
   .option('--no-srt', 'do not write an .srt file for voice-over text')
+  .option('--no-chapters', 'do not turn captions into chapters')
+  .option('--music <file>', 'background music (looped, faded out at the end)')
+  .option('--music-volume <0-1>', 'music volume (default 0.3)', (v: string) => {
+    const n = Number(v);
+    if (!(n >= 0 && n <= 1)) throw new InvalidArgumentError('music volume must be between 0 and 1');
+    return n;
+  })
   .option('--keep-frames', 'keep the captured screenshots for debugging')
   .action(async (file: string, opts: Record<string, unknown>, command: Command) => {
     const fromCli = (key: string) => command.getOptionValueSource(key) === 'cli';
@@ -111,6 +118,8 @@ program
       ...(opts.blur !== undefined && { blur: opts.blur as string[] }),
       ...(opts.seed !== undefined && { seed: Math.round(opts.seed as number) }),
       ...(opts.scale !== undefined && { deviceScaleFactor: opts.scale as number }),
+      ...(opts.music !== undefined && { music: resolve(opts.music as string) }),
+      ...(opts.musicVolume !== undefined && { musicVolume: opts.musicVolume as number }),
     };
 
     const script = await loadScript(file);
@@ -123,6 +132,7 @@ program
       output: outputs,
       headed: Boolean(opts.headed),
       srt: opts.srt !== false,
+      chapters: opts.chapters !== false,
       keepFrames: Boolean(opts.keepFrames),
       ...(opts.timeout !== undefined && { timeout: opts.timeout as number }),
       onStep: (step, i, total) => {
@@ -149,6 +159,7 @@ program
     console.log(`\n${pc.green('✔')} Done in ${seconds}s — ${(result.duration / 1000).toFixed(1)}s video, ${result.frames} frames`);
     for (const output of result.outputs) console.log(`  ${pc.cyan(rel(output))}`);
     if (result.subtitles) console.log(`  ${pc.cyan(rel(result.subtitles))} ${pc.dim('(voice-over subtitles)')}`);
+    if (result.chapters) console.log(`  ${pc.cyan(rel(result.chapters))} ${pc.dim('(YouTube chapters for the description)')}`);
     if (result.framesDir) console.log(pc.dim(`  screenshots kept in ${result.framesDir}`));
   });
 

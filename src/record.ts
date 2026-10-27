@@ -1,10 +1,12 @@
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve } from 'node:path';
 import { EXPLICIT_ZOOM, ZOOM_LEVELS } from './render/camera.js';
 import { buildSubtitleCues, toSrt } from './render/captions.js';
+import { buildChapters, toFfmetadata, toYouTubeChapters, YOUTUBE_MIN_CHAPTER_MS } from './render/chapters.js';
 import { Compositor } from './render/compositor.js';
-import { FrameEncoder, formatFromPath, transcode } from './render/encode.js';
+import { FrameEncoder, formatFromPath, mux, transcode } from './render/encode.js';
 import {
   DEFAULT_BACKGROUND,
   DEFAULT_SIZE,
@@ -25,6 +27,8 @@ export interface RecordOptions extends VideoSettings {
   headed?: boolean;
   /** Write voice-over text to an .srt file next to the video. Default true. */
   srt?: boolean;
+  /** Turn captions into chapters: embedded in MP4/WebM and written as YouTube timestamps. Default true. */
+  chapters?: boolean;
   /** Keep the screenshot folder for debugging. */
   keepFrames?: boolean;
   /** Timeout for finding elements and loading pages, in ms. */
@@ -48,11 +52,15 @@ export interface ResolvedSettings {
   seed: number;
   blur: string[];
   deviceScaleFactor: number | 'auto';
+  music?: string;
+  musicVolume: number;
 }
 
 export interface RecordResult {
   outputs: string[];
   subtitles?: string;
+  /** YouTube chapter timestamps (`0:00 Title` lines), when the captions make at least two chapters. */
+  chapters?: string;
   /** Video length in ms. */
   duration: number;
   frames: number;
@@ -73,6 +81,9 @@ export function resolveSettings(script: VideoSettings, options: VideoSettings): 
   if (!(zoom in ZOOM_LEVELS)) throw new Error('zoom must be off, subtle or strong');
   const theme = pick('theme') ?? 'light';
   if (theme !== 'light' && theme !== 'dark') throw new Error('theme must be light or dark');
+  const musicVolume = pick('musicVolume') ?? 0.3;
+  if (!(musicVolume >= 0 && musicVolume <= 1)) throw new Error('musicVolume must be between 0 and 1');
+  const music = pick('music');
   return {
     ...size,
     fps,
@@ -84,6 +95,8 @@ export function resolveSettings(script: VideoSettings, options: VideoSettings): 
     seed: pick('seed') ?? 1,
     blur: [...(script.blur ?? []), ...(options.blur ?? [])],
     deviceScaleFactor: pick('deviceScaleFactor') ?? 'auto',
+    ...(music && { music: resolve(music) }),
+    musicVolume,
   };
 }
 
@@ -100,6 +113,8 @@ export async function record(script: string | DemoScript | ParsedScript, options
       : parseScript(script, { env: options.env });
 
   const settings = resolveSettings(parsed, options);
+  // Fail before the (slow) recording, not after it.
+  if (settings.music && !existsSync(settings.music)) throw new Error(`Music file not found: ${settings.music}`);
   const outputs = (Array.isArray(options.output) ? options.output : [options.output ?? 'demo.mp4']).map((o) => resolve(o));
   const formats = outputs.map(formatFromPath);
   const hasCaptions = settings.captions && parsed.steps.some((s) => s.kind === 'caption' && s.text);
@@ -127,9 +142,13 @@ export async function record(script: string | DemoScript | ParsedScript, options
       errorScreenshot: firstOutput.slice(0, -extname(firstOutput).length) + '.error.png',
     });
 
-    // Render once to a master file, then convert to the other formats.
+    // Render once to a master file, then convert to the other formats. Music and chapters are
+    // added to the master in a quick extra pass that copies the video stream.
     const masterIndex = formats.indexOf('mp4');
     const master = masterIndex >= 0 ? (outputs[masterIndex] as string) : join(workDir, 'master.mp4');
+    const embedded = options.chapters !== false ? buildChapters(timeline.captions, timeline.duration) : [];
+    const needsMux = Boolean(settings.music) || embedded.length >= 2;
+    const rendered = needsMux ? join(workDir, 'silent.mp4') : master;
     const encodeSettings = { width: settings.width, height: settings.height, fps: settings.fps };
     const total = frameCount(timeline.duration, settings.fps);
     options.onPhase?.('render', master);
@@ -140,7 +159,7 @@ export async function record(script: string | DemoScript | ParsedScript, options
       captions: hasCaptions,
       zoom: ZOOM_LEVELS[settings.zoom],
     });
-    const encoder = new FrameEncoder(master, encodeSettings);
+    const encoder = new FrameEncoder(rendered, encodeSettings);
     try {
       for (let i = 0; i < total; i++) {
         await encoder.write(await compositor.render((i * 1000) / settings.fps));
@@ -150,6 +169,19 @@ export async function record(script: string | DemoScript | ParsedScript, options
     } catch (err) {
       encoder.abort();
       throw err;
+    }
+
+    if (needsMux) {
+      let metadata: string | undefined;
+      if (embedded.length >= 2) {
+        metadata = join(workDir, 'chapters.ffmeta');
+        await writeFile(metadata, toFfmetadata(embedded, timeline.duration), 'utf8');
+      }
+      await mux(rendered, master, {
+        durationMs: timeline.duration,
+        ...(settings.music && { music: settings.music, musicVolume: settings.musicVolume }),
+        ...(metadata && { metadata }),
+      });
     }
 
     for (const output of outputs) {
@@ -166,9 +198,17 @@ export async function record(script: string | DemoScript | ParsedScript, options
       await writeFile(subtitles, toSrt(cues), 'utf8');
     }
 
+    let chapters: string | undefined;
+    const youtube = options.chapters !== false ? buildChapters(timeline.captions, timeline.duration, YOUTUBE_MIN_CHAPTER_MS) : [];
+    if (youtube.length >= 2) {
+      chapters = firstOutput.slice(0, -extname(firstOutput).length) + '.chapters.txt';
+      await writeFile(chapters, toYouTubeChapters(youtube), 'utf8');
+    }
+
     return {
       outputs,
       ...(subtitles && { subtitles }),
+      ...(chapters && { chapters }),
       duration: timeline.duration,
       frames: total,
       settings: { ...settings, deviceScaleFactor },

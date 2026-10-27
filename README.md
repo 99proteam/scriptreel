@@ -7,13 +7,13 @@
 [![npm](https://img.shields.io/npm/v/scriptreel.svg)](https://www.npmjs.com/package/scriptreel)
 [![CI](https://github.com/99proteam/scriptreel/actions/workflows/ci.yml/badge.svg)](https://github.com/99proteam/scriptreel/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Buy Me a Coffee](https://img.shields.io/badge/support-Buy%20Me%20a%20Coffee-ffdd00?logo=buymeacoffee&logoColor=000)](https://buymeacoffee.com/99proteam)
+[![Sponsor on GitHub](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/99proteam)
 
 <a href="https://99proteam.github.io/scriptreel/"><img src="https://img.shields.io/badge/%E2%96%B6%20Live%20demo-99proteam.github.io%2Fscriptreel-8b5cf6?style=for-the-badge" alt="Live demo website" height="40"></a>
 
-<a href="https://buymeacoffee.com/99proteam"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Sponsor scriptreel on Buy Me a Coffee" height="60"></a>
+<a href="https://github.com/sponsors/99proteam"><img src="https://img.shields.io/badge/%F0%9F%92%96_Sponsor_on_GitHub-Goal_$5k%2Fmonth-db61a2?style=for-the-badge&logo=githubsponsors&logoColor=white&labelColor=0d1117" alt="Sponsor scriptreel on GitHub" height="40"></a>
 
-**☕ scriptreel is free. If it saves you time, please [sponsor it](https://buymeacoffee.com/99proteam).**
+**💖 scriptreel is free. If it saves you time, please [sponsor it on GitHub](https://github.com/sponsors/99proteam).**
 
 <img src="https://raw.githubusercontent.com/99proteam/scriptreel/main/docs/demo.gif" alt="A scriptreel demo: signing in to a dashboard with a smooth cursor, auto-zoom and captions" width="820">
 
@@ -28,7 +28,8 @@ Chromium browser and renders:
 - **automatic zoom** into whatever is being clicked or typed into, easing back out between actions,
 - **captions**, a **browser window frame**, rounded corners, a soft shadow and a gradient background,
 - **natural typing** with small random variations,
-- **MP4, WebM and GIF**, at any size: YouTube, vertical reels or square.
+- **MP4, WebM and GIF**, at any size: YouTube, vertical reels or square,
+- optional **background music** that loops and fades out, and **chapters** made from your captions.
 
 When your UI changes, re-run the script and the video updates itself. It's an open-source alternative to
 recording demos by hand with paid screen recorders. There is no server and no account: it runs on your machine or in CI.
@@ -109,6 +110,8 @@ text (`text=Log in`), roles (`role=button[name="Save"]`) and more.
 | `viewport` | `{ width, height }` | `1440×900` | Browser viewport in CSS pixels. |
 | `steps` | list | **required** | The actions to perform, in order. |
 | `size`, `fps`, `zoom`, `theme`, `background`, `captions`, `speed`, `blur`, `seed` | | | Same as the [command-line options](#command-line-options). Flags on the command line win. |
+| `music` | path | | Background music, relative to the script file. Same as `--music`. |
+| `musicVolume` | number | `0.3` | Music volume from 0 to 1. Same as `--music-volume`. |
 | `deviceScaleFactor` | number \| `auto` | `auto` | Screenshot resolution. `auto` keeps text sharp at the strongest zoom. |
 
 ### Steps
@@ -176,6 +179,9 @@ npx scriptreel record <script> [options]
 | `--scale <n>` | auto | Screenshot device scale factor. |
 | `--timeout <ms>` | `15000` | How long to wait for elements and page loads. |
 | `--no-srt` | | Don't write the voice-over `.srt` file. |
+| `--music <file>` | | Background music (mp3, m4a, wav, ogg…). Loops if shorter than the video, fades in and out. |
+| `--music-volume <0-1>` | `0.3` | Music volume, low enough to sit behind the demo. |
+| `--no-chapters` | | Don't turn captions into chapters. |
 | `--keep-frames` | | Keep the captured screenshots for debugging. |
 
 Other commands:
@@ -202,6 +208,31 @@ plays and long enough to read:
 ```
 
 Use it as subtitles, or as the script for recording narration.
+
+## Chapters
+
+Every caption starts a chapter. scriptreel embeds the chapters in MP4 and WebM files (VLC, QuickTime, mpv and most
+players show them), and when the video is long enough it also writes `demo.chapters.txt`, ready to paste into a
+YouTube description:
+
+```text
+0:00 Sign in
+0:14 Create a project
+0:31 Invite a teammate
+```
+
+YouTube needs the first chapter at `0:00`, at least three chapters and at least 10 seconds per chapter, so captions
+that are closer together are merged into the chapter before them. Turn chapters off with `--no-chapters`.
+
+## Background music
+
+```bash
+npx scriptreel record demo.yml --music assets/lofi.mp3 --music-volume 0.25
+```
+
+Or put `music: assets/lofi.mp3` in the script. The track loops if it is shorter than the video, fades in over the first
+second and fades out over the last two. The video itself is not re-encoded, so adding music only takes a moment. GIFs
+stay silent.
 
 ## Use it in CI: update demo videos on every release
 
@@ -308,7 +339,9 @@ npm run examples
 scriptreel is free and MIT-licensed. If it saves you hours of re-recording demos, please consider supporting it.
 Sponsorship pays for maintenance, new features and fast responses to issues.
 
-<a href="https://buymeacoffee.com/99proteam"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Sponsor scriptreel on Buy Me a Coffee" height="60"></a>
+Our goal is **$5,000 a month** on GitHub Sponsors, so scriptreel can be maintained full time.
+
+<a href="https://github.com/sponsors/99proteam"><img src="https://img.shields.io/badge/%F0%9F%92%96_Sponsor_on_GitHub-Goal_$5k%2Fmonth-db61a2?style=for-the-badge&logo=githubsponsors&logoColor=white&labelColor=0d1117" alt="Sponsor scriptreel on GitHub" height="48"></a>
 
 | Tier | For | You get |
 | --- | --- | --- |
@@ -316,8 +349,8 @@ Sponsorship pays for maintenance, new features and fast responses to issues.
 | 🚀 **Startup**, $50/month | Small teams shipping demos in CI | Your name and link in the README, plus priority on issues |
 | 🏢 **Company logo**, $250/month | Companies using scriptreel in production | Your logo at the top of this README and in the docs, plus a direct line for feature requests |
 
-Sign up for any tier at **[buymeacoffee.com/99proteam](https://buymeacoffee.com/99proteam)**. One-off coffees are
-appreciated too.
+Sign up for any tier at **[github.com/sponsors/99proteam](https://github.com/sponsors/99proteam)**. One-off coffees on
+[Buy Me a Coffee](https://buymeacoffee.com/99proteam) are appreciated too.
 
 ### Sponsors
 

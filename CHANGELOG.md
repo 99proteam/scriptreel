@@ -5,6 +5,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Background music: `--music <file>` / `music:` loops the track to the video length, fades it in and out, and mixes it in
+  without re-encoding the video. `--music-volume` / `musicVolume` sets the level (default 0.3).
+- Chapters from captions: embedded in MP4/WebM output and written to `<video>.chapters.txt` in YouTube's format
+  (first chapter at 0:00, chapters under 10 seconds merged). `--no-chapters` turns this off.
+- GitHub Sponsors is now the main way to support the project (goal: $5,000/month).
+
 ## [0.1.0] - 2026-10-05
 
 ### Added

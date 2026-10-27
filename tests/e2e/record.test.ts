@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { record } from '../../src/record.js';
+import { ffmpegPath } from '../../src/render/encode.js';
 import { StepError } from '../../src/runner/recorder.js';
 // @ts-expect-error plain JS helper without types
 import { serveSite } from '../site/server.mjs';
@@ -125,4 +126,45 @@ describe('record (end to end)', () => {
     expect(existsSync(join(outDir, 'broken.error.png'))).toBe(true);
     expect(existsSync(output)).toBe(false);
   }, 60_000);
+
+  it('adds background music and turns captions into chapters', async () => {
+    // A 1-second tone, shorter than the video, so the music has to loop.
+    const music = join(outDir, 'tone.wav');
+    await run(ffmpegPath(), ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1', music]);
+    const output = join(outDir, 'music.mp4');
+    const result = await record(
+      {
+        url: `${site.url}/index.html`,
+        viewport: { width: 960, height: 600 },
+        steps: [
+          { caption: 'Welcome' },
+          { pause: 600 },
+          { caption: 'Pricing' },
+          { scroll: { to: '#pricing' } },
+          { pause: 600 },
+        ],
+      },
+      { output: [output, join(outDir, 'music.webm')], size: '480x270', fps: 15, music, musicVolume: 0.5 },
+    );
+
+    const { stdout } = await run(ffprobe, ['-v', 'error', '-show_streams', '-show_chapters', '-of', 'json', output]);
+    const data = JSON.parse(stdout) as {
+      streams: Array<{ codec_type: string; codec_name: string; duration: string }>;
+      chapters: Array<{ start_time: string; tags: { title: string } }>;
+    };
+    const audio = data.streams.find((s) => s.codec_type === 'audio');
+    expect(audio?.codec_name).toBe('aac');
+    expect(Math.abs(Number(audio!.duration) - result.duration / 1000)).toBeLessThan(0.2);
+    expect(data.chapters.map((c) => c.tags.title)).toEqual(['Welcome', 'Pricing']);
+    expect(Number(data.chapters[0]!.start_time)).toBe(0);
+
+    const webm = await run(ffprobe, ['-v', 'error', '-show_streams', '-of', 'json', join(outDir, 'music.webm')]);
+    expect(webm.stdout).toContain('"codec_name": "opus"');
+    // Too short for YouTube's 10-second chapters, so no description file.
+    expect(result.chapters).toBeUndefined();
+
+    await expect(record({ url: `${site.url}/index.html`, steps: [{ pause: 10 }] }, { output, music: join(outDir, 'missing.mp3') })).rejects.toThrow(
+      /Music file not found/,
+    );
+  }, 180_000);
 });

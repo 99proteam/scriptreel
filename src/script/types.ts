@@ -27,6 +27,10 @@ export interface VideoSettings {
   seed?: number;
   /** Device scale factor for screenshots. `auto` picks one that stays sharp when zoomed. */
   deviceScaleFactor?: number | 'auto';
+  /** Background music file (mp3, m4a, wav, ogg…). Looped and faded out to fit the video. */
+  music?: string;
+  /** Music volume from 0 to 1. Default 0.3, so it sits behind the demo. */
+  musicVolume?: number;
 }
 
 export interface DemoScript extends VideoSettings {

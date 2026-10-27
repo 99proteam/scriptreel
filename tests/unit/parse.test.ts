@@ -104,6 +104,22 @@ describe('step shorthands and options', () => {
   it('rejects empty step lists', () => {
     expect(() => parseScript({ url: 'https://a.dev', steps: [] })).toThrow(/at least one step/);
   });
+
+  it('accepts background music settings and validates them', () => {
+    const script = parseScript({ url: 'https://a.dev', music: ' song.mp3 ', musicVolume: 0.5, steps: [{ pause: 10 }] });
+    expect(script).toMatchObject({ music: 'song.mp3', musicVolume: 0.5 });
+    expect(() => parseScript({ url: 'https://a.dev', music: '', steps: [{ pause: 10 }] })).toThrow(ScriptError);
+    expect(() => parseScript({ url: 'https://a.dev', musicVolume: 2, steps: [{ pause: 10 }] })).toThrow(ScriptError);
+  });
+});
+
+describe('loadScript', () => {
+  it('resolves a relative music path next to the script file', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'scriptreel-music-'));
+    const file = join(dir, 'demo.yml');
+    await writeFile(file, ['url: https://a.dev', 'music: audio/track.mp3', 'steps:', '  - pause: 10'].join('\n'));
+    expect((await loadScript(file)).music).toBe(join(dir, 'audio', 'track.mp3'));
+  });
 });
 
 describe('environment placeholders', () => {

@@ -43,10 +43,16 @@
     "type": "git",
     "url": "git+https://github.com/99proteam/scriptreel.git"
   },
-  "funding": {
-    "type": "buymeacoffee",
-    "url": "https://buymeacoffee.com/99proteam"
-  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/99proteam"
+    },
+    {
+      "type": "buymeacoffee",
+      "url": "https://buymeacoffee.com/99proteam"
+    }
+  ],
   "license": "MIT",
   "author": "99proteam",
   "type": "module",

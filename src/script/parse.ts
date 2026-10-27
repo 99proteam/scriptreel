@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { extname, resolve } from 'node:path';
+import { dirname, extname, isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import YAML from 'yaml';
 import { interpolateEnv } from './env.js';
@@ -43,6 +43,8 @@ const TOP_LEVEL_KEYS = [
   'blur',
   'seed',
   'deviceScaleFactor',
+  'music',
+  'musicVolume',
 ] as const;
 
 export const DEFAULT_VIEWPORT: Viewport = { width: 1440, height: 900 };
@@ -85,6 +87,9 @@ export function parseScript(input: unknown, options: ParseOptions = {}): ParsedS
   if (raw.captions !== undefined && typeof raw.captions !== 'boolean') issues.push('`captions` must be true or false');
   if (raw.speed !== undefined && !(typeof raw.speed === 'number' && raw.speed > 0)) issues.push('`speed` must be a positive number');
   if (raw.seed !== undefined && !Number.isInteger(raw.seed)) issues.push('`seed` must be an integer');
+  if (raw.music !== undefined && !(typeof raw.music === 'string' && raw.music.trim())) issues.push('`music` must be a file path');
+  if (raw.musicVolume !== undefined && !(typeof raw.musicVolume === 'number' && raw.musicVolume >= 0 && raw.musicVolume <= 1))
+    issues.push('`musicVolume` must be a number between 0 and 1');
   if (
     raw.deviceScaleFactor !== undefined &&
     raw.deviceScaleFactor !== 'auto' &&
@@ -124,6 +129,8 @@ export function parseScript(input: unknown, options: ParseOptions = {}): ParsedS
     ...(raw.seed !== undefined && { seed: raw.seed as number }),
     ...(raw.deviceScaleFactor !== undefined && { deviceScaleFactor: raw.deviceScaleFactor as number | 'auto' }),
     ...(blur && { blur }),
+    ...(typeof raw.music === 'string' && { music: raw.music.trim() }),
+    ...(raw.musicVolume !== undefined && { musicVolume: raw.musicVolume as number }),
   };
 }
 
@@ -320,7 +327,7 @@ export async function loadScript(file: string, options: ParseOptions = {}): Prom
     const jiti = createJiti(pathToFileURL(path).href, { interopDefault: true, moduleCache: false });
     const mod = await jiti.import<unknown>(path, { default: true });
     const data = typeof mod === 'function' ? await (mod as () => unknown)() : mod;
-    return parseScript(data, options);
+    return withBaseDir(parseScript(data, options), dirname(path));
   }
   let source: string;
   try {
@@ -328,7 +335,12 @@ export async function loadScript(file: string, options: ParseOptions = {}): Prom
   } catch {
     throw new ScriptError(`Cannot read script file: ${file}`);
   }
-  return parseScriptSource(source, options);
+  return withBaseDir(parseScriptSource(source, options), dirname(path));
+}
+
+/** A relative `music` path in a script file means "next to the script", not the working directory. */
+function withBaseDir(script: ParsedScript, dir: string): ParsedScript {
+  return script.music && !isAbsolute(script.music) ? { ...script, music: resolve(dir, script.music) } : script;
 }
 
 /** Identity helper that gives type checking and autocompletion in .ts demo scripts. */

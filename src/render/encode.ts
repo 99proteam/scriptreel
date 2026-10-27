@@ -37,11 +37,15 @@ export interface EncodeSettings {
 export function codecArgs(format: VideoFormat, settings: EncodeSettings): string[] {
   switch (format) {
     case 'mp4':
-      return ['-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart'];
+      return [
+        '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+        '-c:a', 'aac', '-b:a', '160k',
+      ];
     case 'webm':
       return [
         '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '32', '-row-mt', '1',
         '-deadline', 'good', '-cpu-used', '4', '-pix_fmt', 'yuv420p',
+        '-c:a', 'libopus', '-b:a', '128k',
       ];
     case 'gif': {
       const fps = Math.min(settings.fps, 15);
@@ -50,6 +54,7 @@ export function codecArgs(format: VideoFormat, settings: EncodeSettings): string
         '-vf',
         `fps=${fps},scale=${width}:-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=192:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle`,
         '-loop', '0',
+        '-an',
       ];
     }
   }
@@ -127,6 +132,49 @@ export class FrameEncoder {
   abort(): void {
     this.child.kill('SIGKILL');
   }
+}
+
+export interface MuxExtras {
+  /** Video length in ms; the music is trimmed (and faded out) to match. */
+  durationMs: number;
+  /** Background music file. Looped if shorter than the video. */
+  music?: string;
+  /** Music volume, 0..1. */
+  musicVolume?: number;
+  /** ffmpeg metadata file with chapters (see `toFfmetadata`). */
+  metadata?: string;
+}
+
+/** ffmpeg arguments that add background music and/or chapters to a rendered video without re-encoding it. */
+export function muxArgs(input: string, output: string, extras: MuxExtras): string[] {
+  const format = formatFromPath(output);
+  const seconds = Math.max(0.001, extras.durationMs / 1000);
+  const args = ['-y', '-hide_banner', '-loglevel', 'error', '-i', input];
+  // Input 0 is the video; music and chapters follow in that order when present.
+  const musicInput = extras.music ? 1 : -1;
+  if (extras.music) args.push('-stream_loop', '-1', '-i', extras.music);
+  const metaInput = extras.metadata ? (extras.music ? 2 : 1) : -1;
+  if (extras.metadata) args.push('-f', 'ffmetadata', '-i', extras.metadata);
+  args.push('-map', '0:v', '-c:v', 'copy');
+  if (musicInput >= 0) {
+    const volume = Math.min(1, Math.max(0, extras.musicVolume ?? 0.3));
+    const fadeIn = Math.min(1, seconds / 4);
+    const fadeOut = Math.min(2, seconds / 4);
+    const filter =
+      `[${musicInput}:a]volume=${volume},afade=t=in:st=0:d=${fadeIn.toFixed(3)},` +
+      `afade=t=out:st=${(seconds - fadeOut).toFixed(3)}:d=${fadeOut.toFixed(3)}[music]`;
+    args.push('-filter_complex', filter, '-map', '[music]');
+    args.push(...(format === 'webm' ? ['-c:a', 'libopus', '-b:a', '128k'] : ['-c:a', 'aac', '-b:a', '160k']));
+  }
+  if (metaInput >= 0) args.push('-map_metadata', String(metaInput), '-map_chapters', String(metaInput));
+  args.push('-t', seconds.toFixed(3));
+  if (format === 'mp4') args.push('-movflags', '+faststart');
+  args.push(output);
+  return args;
+}
+
+export async function mux(input: string, output: string, extras: MuxExtras): Promise<void> {
+  await run(muxArgs(input, output, extras)).done;
 }
 
 /** Convert an existing video into another format. */
