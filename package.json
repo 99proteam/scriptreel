@@ -1,6 +1,6 @@
 {
   "name": "scriptreel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn a simple YAML script into a polished product demo video of your web app: smooth cursor, auto-zoom, captions, browser frame. Open-source Screen Studio alternative built on Playwright and ffmpeg.",
   "keywords": [
     "demo",

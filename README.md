@@ -336,6 +336,8 @@ npm run examples
 
 ## Support this project
 
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/99proteam?label=sponsors&logo=githubsponsors&logoColor=white&color=db61a2)](https://github.com/sponsors/99proteam) **Goal: $5,000/month** · [see live progress](https://github.com/sponsors/99proteam)
+
 scriptreel is free and MIT-licensed. If it saves you hours of re-recording demos, please consider supporting it.
 Sponsorship pays for maintenance, new features and fast responses to issues.
 

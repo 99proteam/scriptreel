@@ -5,6 +5,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-27
+
 ### Added
 
 - Background music: `--music <file>` / `music:` loops the track to the video length, fades it in and out, and mixes it in
@@ -30,5 +32,6 @@ All notable changes to this project are documented here. The format follows
 - `scriptreel init` and `scriptreel validate`.
 - Library API: `record()`, `parseScript()`, `loadScript()`, `defineDemo()` and lower-level building blocks.
 
-[Unreleased]: https://github.com/99proteam/scriptreel/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/99proteam/scriptreel/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/99proteam/scriptreel/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/99proteam/scriptreel/releases/tag/v0.1.0
